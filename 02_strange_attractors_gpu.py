@@ -160,17 +160,8 @@ def _(lax, jnp, jax, np):
 @app.cell
 def _(mo):
     n_search = mo.ui.slider(200, 4000, value=800, step=200,
-                            label="candidates to search", show_value=True)
+                            label="candidates", show_value=True)
     seed = mo.ui.slider(0, 40, value=3, step=1, label="search seed", show_value=True)
-    mo.md(
-        f"""
-        ### Discover
-        Draw random coefficient sets, keep the ones that are chaotic **and**
-        beautiful. On the GPU this searches thousands in a blink; on CPU it
-        samples a few hundred.
-        {mo.hstack([n_search, seed], justify="start", gap=2)}
-        """
-    )
     return n_search, seed
 
 
@@ -241,7 +232,6 @@ def _(
         f"by beauty. Sprott hand-searched these one at a time in 1993."
     )
     gallery = _gallery
-    summary
     return gallery, summary
 
 
@@ -267,7 +257,7 @@ def _(np):
 
 
 @app.cell
-def _(BIOLUM, gallery, mo, plt, tufte):
+def _(BIOLUM, gallery, mo, n_search, plt, seed, summary, tufte):
     if not gallery:
         _out = mo.md("*No attractors survived — nudge the seed and search again.*")
     else:
@@ -287,7 +277,19 @@ def _(BIOLUM, gallery, mo, plt, tufte):
                       color="#D7E0C8", fontsize=11, fontfamily="monospace", y=0.98)
         _fig.tight_layout(rect=[0, 0, 1, 0.96])
         _out = _fig
-    _out
+    # controls + the gallery they drive, in one frame
+    mo.vstack(
+        [
+            mo.md(
+                "### Discover\n\nDraw random coefficient sets; keep the ones that are chaotic "
+                "**and** beautiful. On the GPU this searches thousands in a blink."
+            ),
+            mo.hstack([n_search, seed], justify="start", gap=2),
+            summary,
+            _out,
+        ],
+        gap=1,
+    )
     return
 
 

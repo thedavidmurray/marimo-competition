@@ -187,36 +187,44 @@ def _(jax, jnp, lax):
 @app.cell
 def _(mo):
     F = mo.ui.slider(0.010, 0.090, value=0.062, step=0.001,
-                     label="feed rate  F", show_value=True)
+                     label="feed  F", show_value=True)
     k = mo.ui.slider(0.045, 0.075, value=0.0609, step=0.0005,
-                     label="kill rate  k", show_value=True)
+                     label="kill  k", show_value=True)
     steps = mo.ui.slider(1000, 6000, value=3500, step=500,
-                         label="integration steps", show_value=True)
-    mo.md(
-        f"""
-        ### Steer it
-        A single high-resolution run. Drift \\(F\\) and \\(k\\) and watch the
-        vocabulary change — spots dissolve into worms, worms into waves.
-        {mo.hstack([F, k, steps], justify="start", gap=2)}
-        """
-    )
+                         label="steps", show_value=True)
     return F, k, steps
 
 
 @app.cell
-def _(BIOLUM, F, k, plt, simulate, steps, tufte):
+def _(BIOLUM, F, k, mo, plt, simulate, steps, tufte):
+    # Controls + the field they drive, in ONE frame: move a slider, watch it re-solve live.
     _v = simulate(F.value, k.value, steps.value)
-    _fig, _ax = plt.subplots(figsize=(6.4, 6.4))
+    _fig, _ax = plt.subplots(figsize=(5.6, 5.6))
     _fig.patch.set_facecolor("#09090B")
     _ax.set_facecolor("#09090B")
     _ax.imshow(_v, cmap=BIOLUM, interpolation="bilinear", vmin=0, vmax=_v.max() or 1)
     tufte(_ax)
-    # direct label, no legend, no colorbar — the field IS the data
     _ax.text(0.5, -0.04, f"v(x,y)   F={F.value:.3f}   k={k.value:.4f}",
              transform=_ax.transAxes, ha="center", va="top",
              color="#8FA378", fontsize=9, fontfamily="monospace")
     _fig.tight_layout()
-    _fig
+    mo.hstack(
+        [
+            mo.vstack(
+                [
+                    mo.md(
+                        "### Steer it\n\nDrift **F** and **k** and watch the vocabulary "
+                        "change — spots dissolve into worms, worms into waves. The field "
+                        "re-solves live as you drag."
+                    ),
+                    F, k, steps,
+                ],
+                gap=1.1, align="stretch",
+            ),
+            _fig,
+        ],
+        widths=[1, 1.7], align="center", gap=2,
+    )
     return
 
 
