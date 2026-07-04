@@ -230,6 +230,43 @@ def _(BIOLUM, F, k, mo, plt, simulate, steps, tufte):
 
 @app.cell
 def _(mo):
+    evolve_timer = mo.ui.refresh(options=["100ms", "200ms", "400ms"],
+                                 default_interval="120ms")
+    return (evolve_timer,)
+
+
+@app.cell
+def _(BIOLUM, F, evolve_timer, k, mo, plt, simulate, time, tufte):
+    # ── Watch it evolve. Drive the step count off wall-clock time so the field
+    # scrubs seed → worms → steady state and loops — stateless, so no re-run loop.
+    evolve_timer.value  # depend on the timer so this re-runs each tick
+    _steps = 200 + int((time.time() * 320) % 4200)
+    _v = simulate(F.value, k.value, _steps)
+    _fig, _ax = plt.subplots(figsize=(6.0, 6.0))
+    _fig.patch.set_facecolor("#09090B")
+    tufte(_ax)
+    _ax.imshow(_v, cmap=BIOLUM, interpolation="bilinear", vmin=0, vmax=max(_v.max(), 1e-3))
+    _ax.text(0.5, -0.04, f"t = {_steps} steps   F={F.value:.3f}   k={k.value:.4f}",
+             transform=_ax.transAxes, ha="center", va="top",
+             color="#8FA378", fontsize=9, fontfamily="monospace")
+    _fig.tight_layout()
+    mo.vstack(
+        [
+            mo.md(
+                "### Watch it evolve\n\nThe reaction runs live — the seed dissolves into "
+                "worms, they self-organize, then it loops. Uses **F** and **k** from *Steer "
+                "it* above; pick the tick interval."
+            ),
+            evolve_timer,
+            _fig,
+        ],
+        gap=1,
+    )
+    return
+
+
+@app.cell
+def _(mo):
     mo.md(
         r"""
         ### The whole plane at once — Pearson's atlas, computed in parallel
