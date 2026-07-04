@@ -1,3 +1,13 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "marimo",
+#     "numpy",
+#     "matplotlib",
+#     "scipy",
+#     "jax[cuda12]",
+# ]
+# ///
 import marimo
 
 __generated_with = "0.23.1"
