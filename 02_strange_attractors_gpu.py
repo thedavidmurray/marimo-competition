@@ -295,6 +295,52 @@ def _(BIOLUM, gallery, mo, n_search, plt, seed, summary, tufte):
 
 @app.cell
 def _(mo):
+    anim = mo.ui.refresh(options=["150ms", "300ms", "600ms"], default_interval="200ms")
+    return (anim,)
+
+
+@app.cell
+def _(BIOLUM, anim, coeffs_of, gallery, mo, np, orbit, plt, render, time, tufte):
+    # ── Make it MOVE. Drift the top attractor's coefficients off wall-clock time
+    # and re-solve every tick — the form breathes and reforms, never repeating.
+    anim.value  # depend on the timer so this re-runs on each refresh
+    if not gallery:
+        _out = mo.md("*Run the search above first — then this breathes the top attractor.*")
+    else:
+        _base = coeffs_of(gallery[0][2])
+        _ph = time.time() * 0.6
+        _c = _base.copy()
+        _c[2] = _c[2] + 0.030 * np.sin(_ph)
+        _c[9] = _c[9] + 0.030 * np.sin(_ph * 0.73 + 1.3)
+        _c[5] = _c[5] + 0.022 * np.cos(_ph * 0.5)
+        _o, _ = orbit(_c, n=55000, warmup=800)
+        if _o is None:  # drifted out of bounds → fall back to the stable base
+            _o, _ = orbit(_base, n=55000, warmup=800)
+        _xs, _ys = _o
+        _img = render(_xs, _ys)
+        _fig, _ax = plt.subplots(figsize=(6.2, 6.2))
+        _fig.patch.set_facecolor("#09090B")
+        tufte(_ax)
+        _ax.imshow(_img, cmap=BIOLUM, interpolation="bilinear", origin="lower")
+        _fig.tight_layout()
+        _out = mo.vstack(
+            [
+                mo.md(
+                    "### Watch it breathe\n\nThe coefficients drift continuously — the "
+                    "attractor flows and reforms without ever repeating. Each frame is a "
+                    "fresh solve; pick the tick interval below."
+                ),
+                anim,
+                _fig,
+            ],
+            gap=1,
+        )
+    _out
+    return
+
+
+@app.cell
+def _(mo):
     mo.md(
         r"""
         ### Why this is a GPU story — and a custom extension
