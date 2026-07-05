@@ -76,17 +76,19 @@ def _(DEVICE, ON_GPU, mo):
     mo.md(
         f"""
         # Gray-Scott, on a GPU
-        ### Two rules, one nonlinearity, a whole vocabulary of pattern
+        ### One nonlinearity, a whole vocabulary of pattern — then we search it
+
+        Two chemicals diffuse and react. \\(v\\) is autocatalytic — it eats \\(u\\)
+        to make more of itself. That single term, \\(uv^2\\), is enough to grow
+        spots, stripes, rings, mitosis, and — in a razor-thin band — patterns
+        that *move*.
 
         **Paper:** Robert P. Munafo, *Stable localized moving patterns in the 2-D
         Gray-Scott model*, [arXiv:1501.01990](https://arxiv.org/abs/1501.01990).
         Building on Pearson, *Complex Patterns in a Simple System*
         ([Science, 1993](https://www.science.org/doi/10.1126/science.261.5118.189)).
-
-        Two chemicals diffuse and react. \\(v\\) is autocatalytic — it eats \\(u\\)
-        to make more of itself. That single nonlinearity, \\(uv^2\\), is enough to
-        grow spots, stripes, rings, mitosis, and — in a razor-thin band — patterns
-        that *move*. Below: the paper's actual equations, integrated live.
+        Below: the paper's actual equations, integrated live — then swept and
+        scored across the whole \\((F,k)\\) plane at once.
 
         **Device:** <span style="color:{_c}">{DEVICE}</span>
         """
@@ -104,7 +106,8 @@ def _(mo):
 
         The **feed rate** \(F\) replenishes \(u\); the **kill rate** \(k\) drains
         \(v\). Everything interesting lives in that \((F,k)\) plane — so instead of
-        making you hunt for it, the map below shows the whole plane at once.
+        hand-tuning sliders to find it, the map below shows the whole plane at
+        once, computed as a single batched sweep.
         """
     )
     return
@@ -279,7 +282,7 @@ def _(BIOLUM, F, evolve_timer, k, mo, plt, simulate, time, tufte):
 def _(mo):
     mo.md(
         r"""
-        ### The whole plane at once — Pearson's atlas, computed in parallel
+        ### The whole plane at once — the first extension: one `vmap` sweep, not twelve runs
 
         Each tile is an *independent* Gray-Scott simulation at a different
         \((F,k)\), all launched in a **single batched GPU call** (`jax.vmap`).
@@ -365,7 +368,7 @@ def _(
 def _(mo):
     mo.md(
         r"""
-        ### Where do the beautiful ones live? — an aesthetic search
+        ### Where do the beautiful ones live? — the second extension: searching a PDE's beauty
 
         Instead of hunting for good \((F,k)\) by hand, we **score the whole plane**.
         Every point below is a full simulation, rated on how *striking* its pattern
@@ -489,13 +492,12 @@ def _(mo):
         r"""
         ### Why this is a GPU story
 
-        The atlas above is `jax.vmap(simulate)` — the *same* kernel the single
-        run uses, mapped over an array of \((F,k)\) pairs and compiled once. On
-        the Blackwell every tile integrates **in parallel**; on CPU they'd run
-        one after another. The paper explored this plane by hand, a run at a
-        time. Here the plane is a single call — which means you can treat "what
-        does the whole parameter space *look* like" as an interactive question,
-        not a weekend of compute.
+        Both extensions above run the same trick: `jax.vmap(simulate)` — the *same*
+        kernel the single run uses, mapped over an array of \((F,k)\) pairs and
+        compiled once. On the Blackwell every tile integrates **in parallel**; on CPU
+        they'd run one after another. The paper explored this plane by hand, a run at
+        a time. Here it's a single call — which means "what does the whole parameter
+        space *look* like" is an interactive question, not a weekend of compute.
 
         ---
         **The Edgeless loop:** real paper → real simulation → each field is also a

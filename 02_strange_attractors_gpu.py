@@ -62,15 +62,19 @@ def _(DEVICE, ON_GPU, mo):
         # A million attractors, the beautiful few
         ### Sprott's search, run on a GPU and judged for beauty
 
+        Draw twelve random numbers, feed them into a quadratic map, iterate a
+        thousand times. Almost always: a point, a loop, or an explosion to
+        infinity. Once in a while: a strange attractor — chaotic, bounded, and
+        unmistakably alive. That's Sprott's 1993 recipe.
+
         **Paper:** Julien C. Sprott, *Automatic generation of strange attractors*
         (Computers & Graphics 17(3), 1993) — and *Strange Attractors: Creating
-        Patterns in Chaos*. Sprott's insight: take a simple quadratic map with
-        random coefficients, iterate it, and **keep the ones that are chaotic**
-        (positive Lyapunov exponent) and bounded. Most coefficient sets are boring
-        — a point, a loop, or an explosion. A rare few are strange attractors.
+        Patterns in Chaos*. He kept anything with a positive Lyapunov exponent
+        that stayed bounded, testing one candidate at a time on a 386.
 
-        Sprott searched one-at-a-time on a 386. We search **thousands in parallel**
-        on the GPU, then add a second filter he couldn't: *is it beautiful?*
+        **The extension:** we run that same search **thousands-at-a-time on a
+        GPU**, then add a filter Sprott never had the compute for — a beauty
+        score that keeps only the gorgeous survivors.
 
         **Device:** <span style="color:{_c}">{DEVICE}</span>
         """
@@ -291,8 +295,8 @@ def _(BIOLUM, gallery, mo, n_search, plt, seed, summary, tufte):
     mo.vstack(
         [
             mo.md(
-                "### Discover\n\nDraw random coefficient sets; keep the ones that are chaotic "
-                "**and** beautiful. On the GPU this searches thousands in a blink."
+                "### Discover\n\nDraw random coefficient sets, keep the chaotic "
+                "**and** beautiful ones. GPU search: thousands, in a blink."
             ),
             mo.hstack([n_search, seed], justify="start", gap=2),
             summary,
@@ -336,9 +340,9 @@ def _(BIOLUM, anim, coeffs_of, gallery, mo, np, orbit, plt, render, time, tufte)
         _out = mo.vstack(
             [
                 mo.md(
-                    "### Watch it breathe\n\nThe coefficients drift continuously — the "
-                    "attractor flows and reforms without ever repeating. Each frame is a "
-                    "fresh solve; pick the tick interval below."
+                    "### Watch it breathe\n\nDrift the coefficients continuously and the "
+                    "attractor never settles — it flows and reforms, live, never repeating. "
+                    "Each frame is a fresh solve; pick the tick interval below."
                 ),
                 anim,
                 _fig,
@@ -353,18 +357,17 @@ def _(BIOLUM, anim, coeffs_of, gallery, mo, np, orbit, plt, render, time, tufte)
 def _(mo):
     mo.md(
         r"""
-        ### Why this is a GPU story — and a custom extension
+        ### The custom extension: a beauty filter Sprott couldn't compute
 
-        Sprott's method is *embarrassingly parallel*: every candidate is an
-        independent iterate-and-measure. `jax.vmap` maps the whole search —
-        iteration, shadow trajectory, Lyapunov accumulation — across the batch and
-        compiles it once, so a Blackwell evaluates thousands of universes at once.
+        His method is *embarrassingly parallel* — every candidate is an
+        independent iterate-and-measure. `jax.vmap` compiles the whole search —
+        iteration, shadow trajectory, Lyapunov accumulation — into one call, so
+        the GPU evaluates thousands of universes where Sprott evaluated one.
 
-        The **custom extension** is the second filter. Sprott kept whatever was
-        chaotic; we score every survivor for *beauty* — structured filament
-        coverage, entropy, edge density — and surface only the gorgeous few. The
-        letter-codes (e.g. the top tile's name) are reproducible: type one back in
-        and you get the same attractor. Chaos, made searchable and curatable.
+        Chaotic wasn't enough for us. Every survivor gets scored for *beauty* —
+        filament coverage, entropy, edge density — and only the gorgeous few
+        surface. The letter-codes are reproducible: type one back in and you get
+        the exact same attractor. Chaos, made searchable, rankable, and repeatable.
 
         ---
         **The Edgeless loop:** each attractor is a stroke path a pen plotter can

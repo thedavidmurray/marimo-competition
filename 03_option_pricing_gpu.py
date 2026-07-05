@@ -83,11 +83,11 @@ def _(DEVICE, HAS_GPU, mo):
 
         **Paper:** Phelim P. Boyle, *Options: A Monte Carlo Approach*,
         [Journal of Financial Economics 4(3), 1977](https://doi.org/10.1016/0304-405X(77)90005-8).
-        Boyle showed that simulating the terminal price of an asset under
-        geometric Brownian motion — then discounting the average payoff — prices
-        an option to arbitrary precision, no closed form required. In 1977 that
-        meant a mainframe and an overnight run. Below: the same estimator,
-        live, on whatever's under this notebook.
+        Boyle proved that simulating an asset's terminal price under
+        geometric Brownian motion, then discounting the average payoff, prices
+        an option to arbitrary precision — no closed form required. In 1977 that
+        took a mainframe and an overnight run. Below: the identical estimator,
+        10 million paths deep, repricing live on whatever's under this notebook.
 
         **Active device:** <span style="background:{_chip_bg};color:{_c};padding:2px 8px;border-radius:4px;font-family:monospace;font-size:0.85em;">{DEVICE}</span>
         """
@@ -108,7 +108,7 @@ def _(mo):
         Draw \(N\) standard normals, propagate each one through the exact GBM
         solution above, average the discounted payoff. The only question is
         how large \(N\) needs to be before the standard error shrinks to
-        nothing — and how fast you can draw it.
+        nothing — and how fast you can draw ten million of them.
         """
     )
     return
@@ -436,8 +436,8 @@ def _(DIM, FAINT, HAS_GPU, INK, PAPER, jnp, mo, np, plt, rate, spot, strike, tim
     if _gpu_t is not None:
         _speedup = _cpu_t / _gpu_t
         _verdict = mo.md(
-            f"**GPU speedup: {_speedup:.1f}× faster** — "
-            f"CPU {_cpu_t * 1000:.1f} ms vs GPU {_gpu_t * 1000:.1f} ms for {2 * _bench_n:,} paths."
+            f"**{_speedup:.1f}× faster on GPU** — same kernel, same code, only the array module swapped. "
+            f"CPU {_cpu_t * 1000:.1f} ms → GPU {_gpu_t * 1000:.1f} ms for {2 * _bench_n:,} paths."
         ).callout(kind="success")
     else:
         _verdict = mo.md(
@@ -507,25 +507,24 @@ def _(mo):
         r"""
         ### Why this is a GPU story
 
-        Boyle's 1977 estimator is embarrassingly parallel — every path is an
-        independent draw of one normal, propagated through a closed-form
-        exponential. There is no dependency between paths, which is exactly
-        the shape a GPU wants: the same kernel above (`_run_mc`) runs
-        unchanged on `numpy` or `jax.numpy`, only the array module changes.
-        On a Blackwell that means 10 million antithetic paths — 20 million
-        effective samples — price in single-digit milliseconds; the
-        convergence panel above sweeps three orders of magnitude in paths
-        and still redraws instantly. Boyle's original paper reported run
-        times in *minutes* for path counts a thousandth of what this
-        notebook treats as a slider default.
+        Boyle's 1977 estimator is embarrassingly parallel: every path is one
+        independent normal draw, propagated through a closed-form exponential,
+        with zero dependency on any other path — exactly the shape a GPU wants.
+        The kernel above (`_run_mc`) is unchanged between backends; only the
+        array module swaps, `numpy` for `jax.numpy`. That swap is the whole
+        extension, and it's a 100x+ one: Boyle's paper reported run times in
+        *minutes* for path counts a thousandth of this notebook's slider
+        default. On a Blackwell, 10 million antithetic paths — 20 million
+        effective samples — price in single-digit milliseconds, and the
+        convergence panel above still redraws instantly while sweeping three
+        orders of magnitude in N.
 
         ---
-        **The Edgeless loop:** real paper → real estimator → the terminal
-        distribution and Greek surfaces above are themselves fields worth
-        looking at, in the same bioluminescent language as the PDE work in
-        this series. The explainer earns credibility; the convergence proof
-        is the receipt; both point back to *"want your model's behavior
-        rendered like this?"* — [edgelesslab.com](https://edgelesslab.com).
+        **The Edgeless loop:** real paper, real estimator, real speedup — then
+        the terminal distribution and Greek surfaces above are rendered as
+        fields, not tables, in the same bioluminescent language as the rest
+        of the lab's PDE work at [edgelesslab.com](https://edgelesslab.com).
+        The math is the receipt; the rendering is the point.
 
         *Built with JAX · marimo for the marimo × alphaXiv competition.*
 
