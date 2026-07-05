@@ -18,3 +18,24 @@ Live companions: [edgelesslab.com/lab/marimo](https://edgelesslab.com/lab/marimo
 [reaction-diffusion, on your phone](https://edgelesslab.com/threejs/reaction-diffusion/)
 
 MIT License · [edgelesslab.com](https://edgelesslab.com)
+
+## For judges — the 30-second tour
+
+**`01_gray_scott_gpu.py`** — Pearson/Munafo's reaction-diffusion, live. Steer F/k and watch
+the vocabulary change; then two extensions: the *entire* (F,k) plane computed as ONE
+`jax.vmap` call (the paper explored it run-by-run), and an **aesthetic search** that scores
+the beauty of every parameter combination — a score landscape over a PDE's parameter space.
+
+**`02_strange_attractors_gpu.py`** — Sprott's 1993 automatic attractor search, but thousands
+of candidates per batched GPU call instead of one-at-a-time on a 386 — plus the filter Sprott
+couldn't compute: *is it beautiful?* Every discovery has a reproducible letter-code name, and
+the top find breathes live (coefficients drift each tick, re-solved in real time).
+
+**`03_option_pricing_gpu.py`** — Boyle's 1977 Monte-Carlo option pricing at 100×+ via GPU
+antithetic-variate batching, with live convergence — rendered as Tufte objects (direct labels,
+no chartjunk), not a spreadsheet.
+
+All three: attach the GPU (notebook specs → RTX Pro 6000), run top-to-bottom, drag things.
+NumPy fallbacks mean they degrade gracefully on CPU. Companion pieces live at
+[edgelesslab.com/lab/marimo](https://edgelesslab.com/lab/marimo) and the same reaction-diffusion
+runs on your phone at [edgelesslab.com/threejs/reaction-diffusion](https://edgelesslab.com/threejs/reaction-diffusion/).
